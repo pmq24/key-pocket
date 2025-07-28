@@ -18,7 +18,7 @@ var (
 	profile string
 	cmd = &cobra.Command{
 		Use:   "kp",
-		Short: "Stop having to syncing secrets between teammates by encrypting and storing them in the repo itself.",
+		Short: "Stop having to sync secrets between teammates by encrypting and storing them in the repo itself.",
 	}
 )
 
