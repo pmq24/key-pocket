@@ -1,71 +1,37 @@
 package cmd
 
 import (
-	"fmt"
-	"log/slog"
-	"os"
-
-	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
 
-var (
-	Dir string
-	Profile string
-	Alg string
-	Key string
+	"kp/cfg"
+	"kp/cmd/profiles"
+	"kp/cmd/secrets"
+	"kp/log"
 )
 
 func Execute() error {
-  return rootCmd.Execute()
+  return cmd.Execute()
 }
 
-var rootCmd = &cobra.Command{
-  Use:   "kp",
-  Short: "Encrypt secret files and store them in the repo itself.",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		err := initViper(Dir, Profile)
-		if err != nil {
-			slog.Error(fmt.Sprintf("Failed load config: %v", err))
-			os.Exit(1)
-		}
-
-		if cmd.Name() != "new" {
-			err = readKey()
-			if err != nil {
-				slog.Error(fmt.Sprintf("Cannot read key: %v", err))
-				os.Exit(1)
-			}
-		}
-	},
-}
+var (
+	dir string
+	profile string
+	cmd = &cobra.Command{
+		Use:   "kp",
+		Short: "Stop having to syncing secrets between teammates by encrypting and storing them in the repo itself.",
+	}
+)
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&Dir, "dir", "d", "./", "Set the directory the command will be executed in")
-	rootCmd.PersistentFlags().StringVarP(&Profile, "profile", "p", "dev", "Set the profile")
-}
+	cmd.PersistentFlags().StringVarP(&dir, "dir", "d", "./", "Set the directory the command will be executed in")
+	cmd.PersistentFlags().StringVarP(&profile, "profile", "p", "dev", "Set the profile")
+	cmd.PersistentFlags().BoolVarP(&log.Verbose, "verbose", "v", false, "Set verbose mode")
 
-func initViper(dir string, profile string) error {
-	viper.AddConfigPath(dir)
-	viper.SetConfigName("kp." + profile)
-	viper.SetConfigType("yaml")
-	
-	return viper.ReadInConfig()
-}
+	cfg.SetGlobal(cfg.SetGlobalOpts{
+    Dir: cmd.PersistentFlags().Lookup("dir"),
+    Profile: cmd.PersistentFlags().Lookup("profile"),
+  })
 
-func readKey() error {
-	keyFilePath := fmt.Sprintf("%s/kp_key.%s", Dir, Profile)
-	err := godotenv.Load(keyFilePath)
-	if err != nil {
-		return err
-	}
-
-	Alg = os.Getenv(KeyAlg)
-	if (Alg != "aes-256") {
-		return fmt.Errorf("Invalid alg %s", Alg)
-	}
-
-	Key = os.Getenv(KeyVal)
-	return nil
+	cmd.AddCommand(profiles.Cmd)
+	cmd.AddCommand(secrets.Cmd)
 }
