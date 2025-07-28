@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"kp/cfg"
-	"kp/encryption"
-	"kp/log"
+	"github.com/pmq24/kp/cfg"
+	"github.com/pmq24/kp/encryption"
+	"github.com/pmq24/kp/log"
 )
 
 var Cmd = &cobra.Command{

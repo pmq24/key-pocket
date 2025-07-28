@@ -3,8 +3,8 @@ package secrets
 import (
 	"github.com/spf13/cobra"
 
-	"kp/cmd/secrets/decrypt"
-	"kp/cmd/secrets/encrypt"
+	"github.com/pmq24/kp/cmd/secrets/decrypt"
+	"github.com/pmq24/kp/cmd/secrets/encrypt"
 )
 
 var Cmd = &cobra.Command{

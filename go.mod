@@ -1,4 +1,4 @@
-module kp
+module github.com/pmq24/kp
 
 go 1.24.3
 

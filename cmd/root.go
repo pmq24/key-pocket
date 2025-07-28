@@ -3,10 +3,10 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"kp/cfg"
-	"kp/cmd/profiles"
-	"kp/cmd/secrets"
-	"kp/log"
+	"github.com/pmq24/kp/cfg"
+	"github.com/pmq24/kp/cmd/profiles"
+	"github.com/pmq24/kp/cmd/secrets"
+	"github.com/pmq24/kp/log"
 )
 
 func Execute() error {

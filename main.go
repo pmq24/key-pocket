@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"kp/cmd"
+	"github.com/pmq24/kp/cmd"
 )
 
 func main() {

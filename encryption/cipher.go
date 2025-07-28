@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"kp/cfg"
+	"github.com/pmq24/kp/cfg"
 )
 
 func NewCipher(global cfg.Global) (*Cipher, error){
