@@ -3,6 +3,7 @@ package encrypt
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -44,7 +45,15 @@ func execute(config *cfg.Config) {
 			continue
 		}
 
-		secretFiles = append(secretFiles, matches...)
+		filteredMatches := []string{}
+
+		for _, match := range matches {
+      if !strings.HasSuffix(match, cfg.EncryptedExt) {
+				filteredMatches = append(filteredMatches, match)
+      }
+    }
+
+		secretFiles = append(secretFiles, filteredMatches...)
 	}
 
 	log.Verbosef("Detected %d secrets", len(secretFiles))
