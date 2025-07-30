@@ -13,9 +13,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-  Use: "encrypt",
+	Use:     "encrypt",
 	Aliases: []string{"e"},
-  Short: "Encrypt the secrets",
+	Short:   "Encrypt the secrets",
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := cfg.ReadConfig()
 		if err != nil {
@@ -48,10 +48,10 @@ func execute(config *cfg.Config) {
 		filteredMatches := []string{}
 
 		for _, match := range matches {
-      if !strings.HasSuffix(match, cfg.EncryptedExt) {
+			if !strings.HasSuffix(match, cfg.EncryptedExt) {
 				filteredMatches = append(filteredMatches, match)
-      }
-    }
+			}
+		}
 
 		secretFiles = append(secretFiles, filteredMatches...)
 	}
@@ -61,17 +61,17 @@ func execute(config *cfg.Config) {
 	for _, file := range secretFiles {
 		log.Verbosef("Encrypting %s", file)
 		dir := filepath.Dir(file)
-		
-		encryptedFile := filepath.Join(dir, filepath.Base(file) + cfg.EncryptedExt)
-		
+
+		encryptedFile := filepath.Join(dir, filepath.Base(file)+cfg.EncryptedExt)
+
 		original, err := os.ReadFile(file)
 		if err != nil {
 			log.Errorln(err.Error())
 			continue
 		}
-		
+
 		encrypted := cipher.Encrypt(original)
-		
+
 		err = os.WriteFile(encryptedFile, encrypted, 0644)
 		if err != nil {
 			log.Errorf("Failed to encrypt %s: %v", file, err)

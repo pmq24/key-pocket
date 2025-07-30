@@ -13,9 +13,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-  Use: "decrypt",
+	Use:     "decrypt",
 	Aliases: []string{"d"},
-  Short: "Decrypt the secrets",
+	Short:   "Decrypt the secrets",
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := cfg.ReadConfig()
 		if err != nil {
@@ -35,11 +35,10 @@ func execute(config *cfg.Config) {
 		return
 	}
 
-	
 	patterns := config.GetStringSlice("secrets")
 	var encryptedFiles []string
 	for _, pattern := range patterns {
-		glob := filepath.Join(global.Dir, pattern + cfg.EncryptedExt)
+		glob := filepath.Join(global.Dir, pattern+cfg.EncryptedExt)
 		matches, err := filepath.Glob(glob)
 		if err != nil {
 			log.Errorln(err.Error())

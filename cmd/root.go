@@ -10,13 +10,13 @@ import (
 )
 
 func Execute() error {
-  return cmd.Execute()
+	return cmd.Execute()
 }
 
 var (
-	dir string
+	dir     string
 	profile string
-	cmd = &cobra.Command{
+	cmd     = &cobra.Command{
 		Use:   "kp",
 		Short: "Stop having to sync secrets between teammates by encrypting and storing them in the repo itself.",
 	}
@@ -28,9 +28,9 @@ func init() {
 	cmd.PersistentFlags().BoolVarP(&log.Verbose, "verbose", "v", false, "Set verbose mode")
 
 	cfg.SetGlobal(cfg.SetGlobalOpts{
-    Dir: cmd.PersistentFlags().Lookup("dir"),
-    Profile: cmd.PersistentFlags().Lookup("profile"),
-  })
+		Dir:     cmd.PersistentFlags().Lookup("dir"),
+		Profile: cmd.PersistentFlags().Lookup("profile"),
+	})
 
 	cmd.AddCommand(profiles.Cmd)
 	cmd.AddCommand(secrets.Cmd)

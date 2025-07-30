@@ -2,8 +2,8 @@ package encryption
 
 import (
 	"crypto/aes"
-	"crypto/rand"
 	goCipher "crypto/cipher"
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"kp/cfg"
 )
 
-func NewCipher(global cfg.Global) (*Cipher, error){
+func NewCipher(global cfg.Global) (*Cipher, error) {
 	keyFilePath := filepath.Join(global.Dir, fmt.Sprintf(cfg.KeyFileFormat, global.Profile))
 
 	keyBase64, err := os.ReadFile(keyFilePath)
@@ -48,8 +48,8 @@ func (c *Cipher) Decrypt(data []byte) ([]byte, error) {
 	nonceSize := c.gcm.NonceSize()
 
 	if nonceSize > len(data) {
-    return nil, ErrDecrypt{Err: fmt.Errorf("encrypted data too short")}
-  }
+		return nil, ErrDecrypt{Err: fmt.Errorf("encrypted data too short")}
+	}
 
 	nonce := data[:nonceSize]
 	ciphertext := data[nonceSize:]

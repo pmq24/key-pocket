@@ -5,19 +5,19 @@ import "log"
 var Verbose bool
 
 func Verboseln(msg string) {
-	if (Verbose) {
+	if Verbose {
 		log.Println(msg)
 	}
 }
 
 func Verbosef(msg string, a ...any) {
-	if (Verbose) {
+	if Verbose {
 		log.Printf(msg, a...)
 	}
 }
 
 func Infoln(msg string) {
-  log.Println(msg)
+	log.Println(msg)
 }
 
 func Infof(msg string, a ...any) {
@@ -29,7 +29,7 @@ func Warnln(msg string) {
 }
 
 func Warnf(msg string, a ...any) {
-	log.Printf("WARN: " + msg, a...)
+	log.Printf("WARN: "+msg, a...)
 }
 
 func Errorln(msg string) {
@@ -37,5 +37,5 @@ func Errorln(msg string) {
 }
 
 func Errorf(msg string, a ...any) {
-	log.Printf("ERROR: " + msg, a...)
+	log.Printf("ERROR: "+msg, a...)
 }

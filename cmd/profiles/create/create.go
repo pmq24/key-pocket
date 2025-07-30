@@ -9,15 +9,15 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"kp/log"
 	"kp/cfg"
+	"kp/log"
 )
 
 var Cmd = &cobra.Command{
-  Use: "create <name>",
+	Use:     "create <name>",
 	Aliases: []string{"c"},
-	Args: cobra.ExactArgs(1),
-  Short: "Create a new profile",
+	Args:    cobra.ExactArgs(1),
+	Short:   "Create a new profile",
 	Run: func(cmd *cobra.Command, args []string) {
 		global := cfg.ReadGlobal()
 		execute(global, args)
@@ -30,7 +30,7 @@ func execute(global cfg.Global, args []string) {
 	log.Verbosef("Creating %s", keyFilePath)
 
 	_, err := os.Stat(keyFilePath)
-	keyFileAlreayExists :=err == nil
+	keyFileAlreayExists := err == nil
 	if keyFileAlreayExists {
 		log.Errorln("Key already exists")
 		return

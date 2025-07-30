@@ -8,9 +8,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-	Use: "secrets",
+	Use:     "secrets",
 	Aliases: []string{"s"},
-	Short: "Manage secrets",
+	Short:   "Manage secrets",
 }
 
 func init() {

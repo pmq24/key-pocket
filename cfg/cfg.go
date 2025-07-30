@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	EncryptedExt = ".kpenc"
+	EncryptedExt  = ".kpenc"
 	KeyFileFormat = "kpkey.%s"
 	CfgFileFormat = "kpcfg.%s"
 )
@@ -32,7 +32,7 @@ func ReadConfig() (*Config, error) {
 
 func (c *Config) GetGlobal() Global {
 	return Global{
-		Dir: c.GetString("dir"),
+		Dir:     c.GetString("dir"),
 		Profile: c.GetString("profile"),
 	}
 }
@@ -42,9 +42,9 @@ type Config struct {
 }
 
 type ErrReadConfig struct {
-	Dir string
+	Dir     string
 	Profile string
-	Err error
+	Err     error
 }
 
 func (e ErrReadConfig) Error() string {
