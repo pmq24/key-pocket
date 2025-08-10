@@ -7,9 +7,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-	Use: "profiles",
+	Use:     "profiles",
 	Aliases: []string{"p"},
-	Short: "Manage profiles",
+	Short:   "Manage profiles",
 }
 
 func init() {

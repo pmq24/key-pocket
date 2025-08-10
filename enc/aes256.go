@@ -1,9 +1,9 @@
-package encryption
+package enc
 
 import (
 	"crypto/aes"
-	"crypto/rand"
 	goCipher "crypto/cipher"
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -12,8 +12,8 @@ import (
 	"kp/cfg"
 )
 
-func NewCipher(global cfg.Global) (*Cipher, error){
-	keyFilePath := filepath.Join(global.Dir, fmt.Sprintf(cfg.KeyFileFormat, global.Profile))
+func NewAES256Encryptor(config *cfg.BaseCfg) (Encryptor, error) {
+	keyFilePath := filepath.Join(config.GetDir(), fmt.Sprintf(cfg.KeyFileFormat, config.GetProfile()))
 
 	keyBase64, err := os.ReadFile(keyFilePath)
 	if err != nil {
@@ -21,35 +21,35 @@ func NewCipher(global cfg.Global) (*Cipher, error){
 
 	key, err := base64.StdEncoding.DecodeString(string(keyBase64))
 	if err != nil {
-		return nil, ErrNewCipher{KeyFilePath: keyFilePath, Err: err}
+		return nil, ErrNewEncryptor{KeyFilePath: keyFilePath, Err: err}
 	}
 
 	_, err = aes.NewCipher(key)
 	if err != nil {
-		return nil, ErrNewCipher{KeyFilePath: keyFilePath, Err: err}
+		return nil, ErrNewEncryptor{KeyFilePath: keyFilePath, Err: err}
 	}
 
 	block, err := aes.NewCipher(key)
 	gcm, err := goCipher.NewGCM(block)
 	if err != nil {
-		return nil, ErrNewCipher{KeyFilePath: keyFilePath, Err: err}
+		return nil, ErrNewEncryptor{KeyFilePath: keyFilePath, Err: err}
 	}
 
-	return &Cipher{gcm}, nil
+	return &AES256Encryptor{gcm}, nil
 }
 
-func (c *Cipher) Encrypt(data []byte) []byte {
+func (c *AES256Encryptor) Encrypt(data []byte) []byte {
 	nonce := make([]byte, c.gcm.NonceSize())
 	rand.Read(nonce)
 	return c.gcm.Seal(nonce, nonce, data, nil)
 }
 
-func (c *Cipher) Decrypt(data []byte) ([]byte, error) {
+func (c *AES256Encryptor) Decrypt(data []byte) ([]byte, error) {
 	nonceSize := c.gcm.NonceSize()
 
 	if nonceSize > len(data) {
-    return nil, ErrDecrypt{Err: fmt.Errorf("encrypted data too short")}
-  }
+		return nil, ErrDecrypt{Err: fmt.Errorf("encrypted data too short")}
+	}
 
 	nonce := data[:nonceSize]
 	ciphertext := data[nonceSize:]
@@ -62,6 +62,6 @@ func (c *Cipher) Decrypt(data []byte) ([]byte, error) {
 	return original, nil
 }
 
-type Cipher struct {
+type AES256Encryptor struct {
 	gcm goCipher.AEAD
 }

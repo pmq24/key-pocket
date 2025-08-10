@@ -9,28 +9,38 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"kp/log"
 	"kp/cfg"
+	"kp/log"
 )
 
-var Cmd = &cobra.Command{
-  Use: "create <name>",
-	Aliases: []string{"c"},
-	Args: cobra.ExactArgs(1),
-  Short: "Create a new profile",
-	Run: func(cmd *cobra.Command, args []string) {
-		global := cfg.ReadGlobal()
-		execute(global, args)
-	},
-}
+var (
+	Config *cfg.BaseCfg
+	Cmd    = &cobra.Command{
+		Use:     "create <name>",
+		Aliases: []string{"c"},
+		Args:    cobra.ExactArgs(1),
+		Short:   "Create a new profile",
+		Run: func(cmd *cobra.Command, args []string) {
+			pflags := cmd.Root().PersistentFlags()
 
-func execute(global cfg.Global, args []string) {
+			baseCfg := cfg.NewBaseCfg(cfg.NewCfgOpts{
+				Dir:     pflags.Lookup("dir").Value.String(),
+				Profile: pflags.Lookup("profile").Value.String(),
+			})
+
+			execute(baseCfg, args)
+		},
+	}
+)
+
+func execute(config *cfg.BaseCfg, args []string) {
 	name := args[0]
-	keyFilePath := filepath.Join(global.Dir, fmt.Sprintf(cfg.KeyFileFormat, name))
+	keyFilePath := filepath.Join(config.GetDir(), fmt.Sprintf(cfg.KeyFileFormat, name))
+
 	log.Verbosef("Creating %s", keyFilePath)
 
 	_, err := os.Stat(keyFilePath)
-	keyFileAlreayExists :=err == nil
+	keyFileAlreayExists := err == nil
 	if keyFileAlreayExists {
 		log.Errorln("Key already exists")
 		return
