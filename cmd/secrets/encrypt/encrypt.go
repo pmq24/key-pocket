@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"kp/cfg"
-	"kp/encryption"
+	"kp/enc"
 	"kp/log"
 )
 
@@ -17,31 +17,51 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"e"},
 	Short:   "Encrypt the secrets",
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := cfg.ReadConfig()
+		config, err := buildConfig(cmd)
 		if err != nil {
 			log.Errorln(err.Error())
 			return
 		}
-		execute(config)
+
+		encryptor, err := enc.NewAES256Encryptor(&config.BaseCfg)
+		if err != nil {
+			log.Errorln(err.Error())
+			return
+		}
+
+		execute(opts{
+			config:    config,
+			encryptor: encryptor,
+		})
 	},
 }
 
-func execute(config *cfg.Config) {
-	global := config.GetGlobal()
-
-	cipher, err := encryption.NewCipher(global)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
+func buildConfig(cmd *cobra.Command) (*cfg.AppCfg, error) {
+	pflags := cmd.Root().PersistentFlags()
+	cfgOpts := cfg.NewCfgOpts{
+		Dir:     pflags.Lookup("dir").Value.String(),
+		Profile: pflags.Lookup("profile").Value.String(),
 	}
+	return cfg.NewAppCfg(cfgOpts)
+}
 
-	patterns := config.GetStringSlice("secrets")
+type opts struct {
+	config    *cfg.AppCfg
+	encryptor enc.Encryptor
+}
+
+func execute(opts opts) {
+	config := opts.config
+	encryptor := opts.encryptor
+
+	patterns := opts.config.GetSecrets()
+
 	var secretFiles []string
 	for _, pattern := range patterns {
-		glob := filepath.Join(global.Dir, pattern)
+		glob := filepath.Join(config.GetDir(), pattern)
 		matches, err := filepath.Glob(glob)
 		if err != nil {
-			log.Errorln(err.Error())
+			log.Errorf("Error globbing %s: %v. Skipping...", glob, err.Error())
 			continue
 		}
 
@@ -66,15 +86,15 @@ func execute(config *cfg.Config) {
 
 		original, err := os.ReadFile(file)
 		if err != nil {
-			log.Errorln(err.Error())
+			log.Errorf("Error reading %s: %v. Skipping...", file, err.Error())
 			continue
 		}
 
-		encrypted := cipher.Encrypt(original)
+		encrypted := encryptor.Encrypt(original)
 
 		err = os.WriteFile(encryptedFile, encrypted, 0644)
 		if err != nil {
-			log.Errorf("Failed to encrypt %s: %v", file, err)
+			log.Errorf("Failed to encrypt %s: %v. Skipping...", file, err)
 			continue
 		}
 	}

@@ -1,13 +1,13 @@
-package encryption
+package enc
 
 import "fmt"
 
-type ErrNewCipher struct {
+type ErrNewEncryptor struct {
 	KeyFilePath string
 	Err         error
 }
 
-func (e ErrNewCipher) Error() string {
+func (e ErrNewEncryptor) Error() string {
 	return fmt.Sprintf("Failed to create cipher from %s: %v", e.KeyFilePath, e.Err)
 }
 

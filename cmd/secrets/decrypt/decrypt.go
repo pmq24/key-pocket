@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"kp/cfg"
-	"kp/encryption"
+	"kp/enc"
 	"kp/log"
 )
 
@@ -17,31 +17,50 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"d"},
 	Short:   "Decrypt the secrets",
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := cfg.ReadConfig()
+		config, err := buildConfig(cmd)
 		if err != nil {
 			log.Errorln(err.Error())
 			return
 		}
-		execute(config)
+
+		encryptor, err := enc.NewAES256Encryptor(&config.BaseCfg)
+		if err != nil {
+			log.Errorln(err.Error())
+			return
+		}
+
+		opts := executeOpts{
+			config:    config,
+			encryptor: encryptor,
+		}
+		execute(opts)
 	},
 }
 
-func execute(config *cfg.Config) {
-	global := config.GetGlobal()
-
-	cipher, err := encryption.NewCipher(global)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
+func buildConfig(cmd *cobra.Command) (*cfg.AppCfg, error) {
+	pflags := cmd.Root().PersistentFlags()
+	cfgOpts := cfg.NewCfgOpts{
+		Dir:     pflags.Lookup("dir").Value.String(),
+		Profile: pflags.Lookup("profile").Value.String(),
 	}
+	return cfg.NewAppCfg(cfgOpts)
+}
 
-	patterns := config.GetStringSlice("secrets")
+type executeOpts struct {
+	config    *cfg.AppCfg
+	encryptor enc.Encryptor
+}
+
+func execute(opts executeOpts) {
+	patterns := opts.config.GetSecrets()
+
 	var encryptedFiles []string
 	for _, pattern := range patterns {
-		glob := filepath.Join(global.Dir, pattern+cfg.EncryptedExt)
+		p := pattern + cfg.EncryptedExt
+		glob := filepath.Join(opts.config.GetDir(), p)
 		matches, err := filepath.Glob(glob)
 		if err != nil {
-			log.Errorln(err.Error())
+			log.Errorf("Error globbing %s: %v. Skipping...", p, err.Error())
 			continue
 		}
 
@@ -55,11 +74,11 @@ func execute(config *cfg.Config) {
 
 		encryptedContent, err := os.ReadFile(file)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("Error reading encrypted file %s: %v", file, err))
+			log.Errorln(fmt.Sprintf("Error reading encrypted file %s: %v. Skipping...", file, err))
 			continue
 		}
 
-		decryptedContent, err := cipher.Decrypt(encryptedContent)
+		decryptedContent, err := opts.encryptor.Decrypt(encryptedContent)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("Error decrypting %s: %v", file, err))
 			continue
@@ -69,7 +88,7 @@ func execute(config *cfg.Config) {
 
 		err = os.WriteFile(outputPath, decryptedContent, 0644)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("Error writing decrypted file %s: %v", outputPath, err))
+			log.Errorln(fmt.Sprintf("Error writing decrypted file %s: %v. Skipping...", outputPath, err))
 			continue
 		}
 	}
